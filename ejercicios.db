@@ -210,3 +210,112 @@ select count(NAME) from CITY where POPULATION > 100000
 Query the total population of all cities in CITY where District is California.
 R//
 SELECT SUM(POPULATION) FROM CITY WHERE DISTRICT = 'California'
+
+
+Query the average population of all cities in CITY where District is California.
+R//
+SELECT AVG(POPULATION) FROM CITY WHERE District = 'California'
+
+
+Query the average population for all cities in CITY, rounded down to the nearest integer.
+R//
+SELECT ROUND(AVG(POPULATION),0) FROM CITY 
+
+
+Query the sum of the populations for all Japanese cities in CITY. The COUNTRYCODE for Japan is JPN.
+R//
+SELECT SUM(POPULATION) FROM CITY WHERE COUNTRYCODE = "JPN"
+
+
+Query the difference between the maximum and minimum populations in CITY.
+R//
+SELECT MAX(POPULATION) - MIN(POPULATION) FROM CITY
+
+
+Samantha was tasked with calculating the average monthly salaries for all employees in the EMPLOYEES table, 
+but did not realize her keyboard's  0 key was broken until after completing the calculation. She wants your help 
+finding the difference between her miscalculation (using salaries with any zeros removed), and the actual average salary.
+Write a query calculating the amount of error (i.e.:  average monthly salaries), and round it up to the next integer.
+R//
+SELECT ROUND(AVG(Salary)) -  ROUND(AVG(REPLACE(Salary, 0, ''))) FROM EMPLOYEES
+
+
+We define an employee's total earnings to be their monthly SALARY*MONTHS worked, and the maximum total earnings to be the maximum 
+total earnings for any employee in the Employee table. Write a query to find the maximum total earnings for all employees 
+as well as the total number of employees who have maximum total earnings. Then print these values as  space-separated integers.
+R//
+SELECT MAX(salary*months), COUNT(salary*months) FROM Employee GROUP BY salary*months
+ORDER BY salary*months 
+DESC
+LIMIT 1
+
+
+Query the following two values from the STATION table:
+The sum of all values in LAT_N rounded to a scale of 2 decimal places.
+The sum of all values in LONG_W rounded to a scale of 2 decimal places.
+R//
+SELECT ROUND(SUM(LAT_N),2), ROUND(SUM(LONG_W),2) FROM STATION
+
+
+Query the sum of Northern Latitudes (LAT_N) from STATION having values greater than 38.7880 and less than 137.2346. 
+Truncate your answer to  decimal places.
+R//
+SELECT ROUND(SUM(LAT_N),4) FROM STATION WHERE LAT_N>38.7880 AND LAT_N<137.2345
+
+
+Query the greatest value of the Northern Latitudes (LAT_N) from STATION that is less than 134.2345. 
+Truncate your answer to  decimal places.
+R//
+SELECT ROUND(MAX(LAT_N),4) FROM STATION WHERE LAT_N<137.2345
+
+
+Query the Western Longitude (LONG_W) for the largest Northern Latitude (LAT_N) in STATION that is less than 137.2345. 
+Round your answer to 4 decimal places.
+R//
+SELECT ROUND(LONG_W,4) FROM STATION WHERE LAT_N<137.2345 ORDER BY LAT_N DESC LIMIT 1
+
+
+Query the smallest Northern Latitude (LAT_N) from STATION that is greater than 38.7780. Round your answer to 4 decimal places.
+R//
+SELECT ROUND(MIN(LAT_N),4) FROM STATION WHERE LAT_N>38.7780
+
+
+Query the Western Longitude (LONG_W)where the smallest Northern Latitude (LAT_N) in STATION is greater than 38.7780. 
+Round your answer to 4 decimal places.
+R//
+SELECT ROUND(LONG_W,4) FROM STATION WHERE LAT_N>38.7780 ORDER BY LAT_N ASC LIMIT 1
+
+
+Consider pi(a,b) and p2(c,d) to be two points on a 2D plane.
+ a happens to equal the minimum value in Northern Latitude (LAT_N in STATION).
+ b happens to equal the minimum value in Western Longitude (LONG_W in STATION).
+ c happens to equal the maximum value in Northern Latitude (LAT_N in STATION).
+ d happens to equal the maximum value in Western Longitude (LONG_W in STATION).
+Query the Manhattan Distance between points  and  and round it to a scale of  decimal places.
+R//
+SELECT ROUND(MAX(LAT_N)-MIN(LAT_N)+MAX(LONG_W)-MIN(LONG_W),4)
+FROM STATION 
+
+
+Consider p1(a,c) and p2(b,d) to be two points on a 2D plane where (a,b) are the respective minimum and maximum values of Northern Latitude (LAT_N) 
+and (c,d) are the respective minimum and maximum values of Western Longitude (LONG_W) in STATION.
+Query the Euclidean Distance between points p1 and p2 and format your answer to display 4 decimal digits.
+R//
+SELECT ROUND(SQRT(POWER(MAX(LAT_N)-MIN(LAT_N),2)+POWER(MAX(LONG_W)-MIN(LONG_W),2)),4)
+FROM STATION
+
+
+A median is defined as a number separating the higher half of a data set from the lower half. 
+Query the median of the Northern Latitudes (LAT_N) from STATION and round your answer to  decimal places.
+R//
+WITH a AS (
+  SELECT LAT_N, ROW_NUMBER() OVER (ORDER BY LAT_N) AS b
+  FROM STATION
+)
+SELECT
+  CASE
+    WHEN (SELECT COUNT(*) FROM a) % 2 <> 0 THEN round((SELECT LAT_N FROM a WHERE b = CEILING((SELECT MAX(b) FROM a)/2)),4)
+    WHEN (SELECT COUNT(*) FROM a) % 2 = 0 THEN round((SELECT AVG(LAT_N) FROM a WHERE b IN ((SELECT MAX(b) FROM a)/2, (SELECT MAX(b) FROM a)/2 + 1)),4)
+  END AS Median
+FROM a
+limit 1;
